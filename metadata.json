@@ -1,0 +1,6 @@
+{
+  "name": "RitmoLocal",
+  "description": "Reproductor de música offline con listas aleatorias por momento del día, estadísticas mensuales y guardado en la nube del progreso y tiempo de reproducción.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">RitmoLocal</string>
+    <string name="nav_library">Biblioteca</string>
+    <string name="nav_mixes">Por Hora</string>
+    <string name="nav_time">Tiempo</string>
+    <string name="nav_stats">Mensual</string>
+    <string name="auth_title">Tu música local, siempre sincronizada</string>
+    <string name="auth_subtitle">Reproduce tus archivos de audio sin conexión, genera mezclas para cada momento del día y guarda tu tiempo de reproducción y estadísticas mensuales en la nube.</string>
+    <string name="sign_in_google">Iniciar sesión con Google</string>
+    <string name="sign_out">Cerrar sesión</string>
+    <string name="resume_title">Continuar donde lo dejaste</string>
+    <string name="save_cloud_now">Guardar en la nube</string>
+    <string name="permission_audio_title">Acceso a música local</string>
+    <string name="permission_audio_desc">Permite leer las canciones guardadas en tu dispositivo para reproducirlas sin conexión y crear tus listas aleatorias.</string>
+    <string name="grant_permission">Permitir acceso</string>
+    <string name="import_audio_files">Importar audios</string>
+    <string name="media_notification_channel_name">Reproducción de música</string>
+</resources>

@@ -1,0 +1,268 @@
+{
+  "entities": {
+    "PlaybackProgress": {
+      "title": "PlaybackProgress",
+      "description": "Cloud-saved current song, playback position, and cumulative playback time for resuming later.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "trackKey": { "type": "string", "description": "Stable identifier for the local audio track" },
+        "trackTitle": { "type": "string", "description": "Title of the current song" },
+        "artistName": { "type": "string", "description": "Artist name" },
+        "albumName": { "type": "string", "description": "Album name" },
+        "trackUri": { "type": "string", "description": "Local content URI of the audio file" },
+        "albumId": { "type": "integer", "description": "MediaStore album ID for local artwork lookup" },
+        "positionMs": { "type": "integer", "description": "Playback position in milliseconds" },
+        "durationMs": { "type": "integer", "description": "Total track duration in milliseconds" },
+        "totalPlaybackSeconds": { "type": "integer", "description": "Cumulative cloud-saved playback time in seconds" },
+        "timeOfDaySlot": {
+          "type": "string",
+          "enum": ["MORNING", "AFTERNOON", "NIGHT"],
+          "description": "Active time-of-day playlist slot"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on create via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp on update via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "trackKey",
+        "trackTitle",
+        "artistName",
+        "albumName",
+        "trackUri",
+        "albumId",
+        "positionMs",
+        "durationMs",
+        "totalPlaybackSeconds",
+        "timeOfDaySlot",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MonthlyStat": {
+      "title": "MonthlyStat",
+      "description": "Monthly summary of total listening time, play count, and time-of-day distribution.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "monthKey": { "type": "string", "description": "Month identifier YYYY-MM" },
+        "totalSeconds": { "type": "integer", "description": "Total seconds listened during this month" },
+        "totalPlays": { "type": "integer", "description": "Total song plays recorded this month" },
+        "morningSeconds": { "type": "integer", "description": "Seconds listened in morning playlists" },
+        "afternoonSeconds": { "type": "integer", "description": "Seconds listened in afternoon playlists" },
+        "nightSeconds": { "type": "integer", "description": "Seconds listened in night playlists" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "monthKey",
+        "totalSeconds",
+        "totalPlays",
+        "morningSeconds",
+        "afternoonSeconds",
+        "nightSeconds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MonthlyTrackStat": {
+      "title": "MonthlyTrackStat",
+      "description": "Per-track monthly play counts and listening duration used to compute top songs, artists, and albums.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "monthKey": { "type": "string", "description": "Month identifier YYYY-MM" },
+        "trackKey": { "type": "string", "description": "Stable identifier for the local audio track" },
+        "trackTitle": { "type": "string", "description": "Song title" },
+        "artistName": { "type": "string", "description": "Artist name" },
+        "albumName": { "type": "string", "description": "Album name" },
+        "albumId": { "type": "integer", "description": "MediaStore album ID" },
+        "playCount": { "type": "integer", "description": "Number of times played this month" },
+        "totalSeconds": { "type": "integer", "description": "Total seconds listened to this track this month" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "monthKey",
+        "trackKey",
+        "trackTitle",
+        "artistName",
+        "albumName",
+        "albumId",
+        "playCount",
+        "totalSeconds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "FavoriteTrack": {
+      "title": "FavoriteTrack",
+      "description": "Cloud-synced favorite track marked by the user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase Auth UID" },
+        "trackKey": { "type": "string", "description": "Stable track identifier" },
+        "trackTitle": { "type": "string", "description": "Song title" },
+        "artistName": { "type": "string", "description": "Artist name" },
+        "albumName": { "type": "string", "description": "Album name" },
+        "trackUri": { "type": "string", "description": "Local content URI" },
+        "albumId": { "type": "integer", "description": "MediaStore album ID" },
+        "durationMs": { "type": "integer", "description": "Duration in milliseconds" },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "userId",
+        "trackKey",
+        "trackTitle",
+        "artistName",
+        "albumName",
+        "trackUri",
+        "albumId",
+        "durationMs",
+        "createdAt"
+      ]
+    },
+    "RegionalChatMessage": {
+      "title": "RegionalChatMessage",
+      "description": "Message in a regional community chat with optional song recommendation and downloadable audio clip.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string", "description": "Sender Firebase Auth UID" },
+        "senderName": { "type": "string", "description": "Display name of the sender" },
+        "senderAvatarBase64": { "type": "string", "description": "Compressed circular profile avatar thumbnail (<=35KB)" },
+        "regionId": {
+          "type": "string",
+          "enum": ["LATAM", "ESPANA", "NORTEAMERICA", "EUROPA", "ASIA", "GLOBAL"],
+          "description": "Chat region room identifier"
+        },
+        "messageText": { "type": "string", "description": "Chat message text" },
+        "recommendedTrackTitle": { "type": "string", "description": "Optional recommended song title" },
+        "recommendedArtist": { "type": "string", "description": "Optional recommended artist name" },
+        "audioFileName": { "type": "string", "description": "Optional shared audio file name" },
+        "audioMimeType": { "type": "string", "description": "Optional shared audio MIME type" },
+        "audioClipBase64": { "type": "string", "description": "Optional inline Base64-encoded downloadable audio file (for small clips)" },
+        "audioChunkCount": { "type": "integer", "description": "Number of audioChunks subcollection documents (0..12) for larger tracks up to ~6 MB / 5 min" },
+        "audioSizeBytes": { "type": "integer", "description": "Raw binary size in bytes of the shared audio" },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Expiration timestamp (~78 hours after creation) for chat auto-cleanup"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp via FieldValue.serverTimestamp()"
+        }
+      },
+      "required": [
+        "senderId",
+        "senderName",
+        "senderAvatarBase64",
+        "regionId",
+        "messageText",
+        "recommendedTrackTitle",
+        "recommendedArtist",
+        "audioFileName",
+        "audioMimeType",
+        "audioClipBase64",
+        "audioChunkCount",
+        "audioSizeBytes",
+        "expiresAt",
+        "createdAt"
+      ]
+    },
+    "ChatAudioChunk": {
+      "title": "ChatAudioChunk",
+      "description": "Ordered Base64 chunk for shared chat audio up to ~6 MB / 5 minutes, automatically expiring at 78 hours.",
+      "type": "object",
+      "properties": {
+        "senderId": { "type": "string" },
+        "regionId": { "type": "string" },
+        "messageId": { "type": "string" },
+        "chunkIndex": { "type": "integer" },
+        "dataBase64": { "type": "string" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["senderId", "regionId", "messageId", "chunkIndex", "dataBase64", "expiresAt", "createdAt"]
+    },
+    "FcmToken": {
+      "title": "FcmToken",
+      "description": "FCM push registration token and per-user chat notification preferences.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "token": { "type": "string" },
+        "notificationsEnabled": { "type": "boolean" },
+        "onlyActiveRegion": { "type": "boolean" },
+        "regionId": {
+          "type": "string",
+          "enum": ["LATAM", "ESPANA", "NORTEAMERICA", "EUROPA", "ASIA", "GLOBAL"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "token", "notificationsEnabled", "onlyActiveRegion", "regionId", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/playbackState/{stateId}": {
+      "schema": { "$ref": "#/entities/PlaybackProgress" },
+      "description": "Stores the user's latest playback state and cumulative listening time under document ID 'current'."
+    },
+    "/users/{userId}/monthlyStats/{monthKey}": {
+      "schema": { "$ref": "#/entities/MonthlyStat" },
+      "description": "Stores monthly aggregated playback time and time-of-day listening breakdown."
+    },
+    "/users/{userId}/monthlyStats/{monthKey}/trackStats/{statId}": {
+      "schema": { "$ref": "#/entities/MonthlyTrackStat" },
+      "description": "Stores per-track monthly play count and seconds for top songs, artists, and albums."
+    },
+    "/users/{userId}/favorites/{favId}": {
+      "schema": { "$ref": "#/entities/FavoriteTrack" },
+      "description": "Stores the user's favorite local tracks."
+    },
+    "/regionalChats/{regionId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/RegionalChatMessage" },
+      "description": "Stores community music recommendations and shared audio clips scoped by region (auto-expiring after 78h)."
+    },
+    "/regionalChats/{regionId}/messages/{messageId}/audioChunks/{chunkId}": {
+      "schema": { "$ref": "#/entities/ChatAudioChunk" },
+      "description": "Stores ordered Base64 audio chunks for shared tracks up to 5 min / ~6 MB."
+    },
+    "/users/{userId}/fcmTokens/{tokenId}": {
+      "schema": { "$ref": "#/entities/FcmToken" },
+      "description": "Stores FCM device registration tokens and chat push notification preferences scoped to the owner user."
+    }
+  }
+}

@@ -1,0 +1,336 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidMonthKey(monthKey) {
+      return monthKey is string && monthKey.matches('^[0-9]{4}-[0-9]{2}$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidPlaybackProgress(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.trackKey is string && data.trackKey.size() >= 1 && data.trackKey.size() <= 200 &&
+             data.trackTitle is string && data.trackTitle.size() >= 1 && data.trackTitle.size() <= 200 &&
+             data.artistName is string && data.artistName.size() >= 1 && data.artistName.size() <= 200 &&
+             data.albumName is string && data.albumName.size() >= 1 && data.albumName.size() <= 200 &&
+             data.trackUri is string && data.trackUri.size() <= 1000 &&
+             data.albumId is int && data.albumId >= 0 &&
+             data.positionMs is int && data.positionMs >= 0 &&
+             data.durationMs is int && data.durationMs >= 0 &&
+             data.totalPlaybackSeconds is int && data.totalPlaybackSeconds >= 0 &&
+             data.timeOfDaySlot in ['MORNING', 'AFTERNOON', 'NIGHT'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidMonthlyStat(data, userId, monthKey) {
+      return data.userId is string && data.userId == userId &&
+             data.monthKey is string && data.monthKey == monthKey && isValidMonthKey(data.monthKey) &&
+             data.totalSeconds is int && data.totalSeconds >= 0 &&
+             data.totalPlays is int && data.totalPlays >= 0 &&
+             data.morningSeconds is int && data.morningSeconds >= 0 &&
+             data.afternoonSeconds is int && data.afternoonSeconds >= 0 &&
+             data.nightSeconds is int && data.nightSeconds >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidTrackStat(data, userId, monthKey) {
+      return data.userId is string && data.userId == userId &&
+             data.monthKey is string && data.monthKey == monthKey && isValidMonthKey(data.monthKey) &&
+             data.trackKey is string && data.trackKey.size() >= 1 && data.trackKey.size() <= 200 &&
+             data.trackTitle is string && data.trackTitle.size() >= 1 && data.trackTitle.size() <= 200 &&
+             data.artistName is string && data.artistName.size() >= 1 && data.artistName.size() <= 200 &&
+             data.albumName is string && data.albumName.size() >= 1 && data.albumName.size() <= 200 &&
+             data.albumId is int && data.albumId >= 0 &&
+             data.playCount is int && data.playCount >= 0 &&
+             data.totalSeconds is int && data.totalSeconds >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidFavoriteTrack(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.trackKey is string && data.trackKey.size() >= 1 && data.trackKey.size() <= 200 &&
+             data.trackTitle is string && data.trackTitle.size() >= 1 && data.trackTitle.size() <= 200 &&
+             data.artistName is string && data.artistName.size() >= 1 && data.artistName.size() <= 200 &&
+             data.albumName is string && data.albumName.size() >= 1 && data.albumName.size() <= 200 &&
+             data.trackUri is string && data.trackUri.size() <= 1000 &&
+             data.albumId is int && data.albumId >= 0 &&
+             data.durationMs is int && data.durationMs >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidRegionId(regionId) {
+      return regionId in ['LATAM', 'ESPANA', 'NORTEAMERICA', 'EUROPA', 'ASIA', 'GLOBAL'];
+    }
+
+    function isValidChatMessage(data, regionId) {
+      return data.senderId is string && data.senderId == request.auth.uid &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 80 &&
+             data.senderAvatarBase64 is string && data.senderAvatarBase64.size() <= 35000 &&
+             data.regionId is string && data.regionId == regionId && isValidRegionId(data.regionId) &&
+             data.messageText is string && data.messageText.size() >= 1 && data.messageText.size() <= 500 &&
+             data.recommendedTrackTitle is string && data.recommendedTrackTitle.size() <= 160 &&
+             data.recommendedArtist is string && data.recommendedArtist.size() <= 160 &&
+             data.audioFileName is string && data.audioFileName.size() <= 160 &&
+             data.audioMimeType is string && data.audioMimeType.size() <= 80 &&
+             data.audioClipBase64 is string && data.audioClipBase64.size() <= 960000 &&
+             data.audioChunkCount is int && data.audioChunkCount >= 0 && data.audioChunkCount <= 12 &&
+             data.audioSizeBytes is int && data.audioSizeBytes >= 0 && data.audioSizeBytes <= 6000000 &&
+             data.expiresAt is timestamp && data.expiresAt > request.time && data.expiresAt <= request.time + duration.value(79, 'h') &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidAudioChunk(data, regionId, messageId) {
+      return data.senderId is string && data.senderId == request.auth.uid &&
+             data.regionId is string && data.regionId == regionId && isValidRegionId(data.regionId) &&
+             data.messageId is string && data.messageId == messageId &&
+             data.chunkIndex is int && data.chunkIndex >= 0 && data.chunkIndex < 12 &&
+             data.dataBase64 is string && data.dataBase64.size() >= 1 && data.dataBase64.size() <= 750000 &&
+             data.expiresAt is timestamp && data.expiresAt > request.time && data.expiresAt <= request.time + duration.value(79, 'h') &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidFcmToken(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.token is string && data.token.size() >= 1 && data.token.size() <= 512 &&
+             data.notificationsEnabled is bool &&
+             data.onlyActiveRegion is bool &&
+             data.regionId is string && isValidRegionId(data.regionId) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/playbackState/{stateId} {
+      allow get: if isOwner(userId) && isValidId(stateId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       stateId == 'current' &&
+                       incoming().keys().hasAll([
+                         'userId', 'trackKey', 'trackTitle', 'artistName', 'albumName',
+                         'trackUri', 'albumId', 'positionMs', 'durationMs',
+                         'totalPlaybackSeconds', 'timeOfDaySlot', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'trackKey', 'trackTitle', 'artistName', 'albumName',
+                         'trackUri', 'albumId', 'positionMs', 'durationMs',
+                         'totalPlaybackSeconds', 'timeOfDaySlot', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidPlaybackProgress(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       stateId == 'current' &&
+                       isValidPlaybackProgress(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'trackKey', 'trackTitle', 'artistName', 'albumName',
+                         'trackUri', 'albumId', 'positionMs', 'durationMs',
+                         'totalPlaybackSeconds', 'timeOfDaySlot', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && stateId == 'current';
+    }
+
+    match /users/{userId}/monthlyStats/{monthKey} {
+      allow get: if isOwner(userId) && isValidMonthKey(monthKey);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidMonthKey(monthKey) &&
+                       incoming().keys().hasAll([
+                         'userId', 'monthKey', 'totalSeconds', 'totalPlays',
+                         'morningSeconds', 'afternoonSeconds', 'nightSeconds',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'monthKey', 'totalSeconds', 'totalPlays',
+                         'morningSeconds', 'afternoonSeconds', 'nightSeconds',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidMonthlyStat(incoming(), userId, monthKey);
+
+      allow update: if isOwner(userId) &&
+                       isValidMonthKey(monthKey) &&
+                       isValidMonthlyStat(incoming(), userId, monthKey) &&
+                       incoming().userId == existing().userId &&
+                       incoming().monthKey == existing().monthKey &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'totalSeconds', 'totalPlays',
+                         'morningSeconds', 'afternoonSeconds', 'nightSeconds',
+                         'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidMonthKey(monthKey);
+
+      match /trackStats/{statId} {
+        allow get: if isOwner(userId) && isValidMonthKey(monthKey) && isValidId(statId);
+        allow list: if isOwner(userId) && isValidMonthKey(monthKey);
+
+        allow create: if isOwner(userId) &&
+                         isValidMonthKey(monthKey) &&
+                         isValidId(statId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'monthKey', 'trackKey', 'trackTitle',
+                           'artistName', 'albumName', 'albumId', 'playCount',
+                           'totalSeconds', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'monthKey', 'trackKey', 'trackTitle',
+                           'artistName', 'albumName', 'albumId', 'playCount',
+                           'totalSeconds', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidTrackStat(incoming(), userId, monthKey);
+
+        allow update: if isOwner(userId) &&
+                         isValidMonthKey(monthKey) &&
+                         isValidId(statId) &&
+                         isValidTrackStat(incoming(), userId, monthKey) &&
+                         incoming().userId == existing().userId &&
+                         incoming().monthKey == existing().monthKey &&
+                         incoming().trackKey == existing().trackKey &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'trackTitle', 'artistName', 'albumName', 'albumId',
+                           'playCount', 'totalSeconds', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidMonthKey(monthKey) && isValidId(statId);
+      }
+    }
+
+    match /users/{userId}/favorites/{favId} {
+      allow get: if isOwner(userId) && isValidId(favId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(favId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'trackKey', 'trackTitle', 'artistName',
+                         'albumName', 'trackUri', 'albumId', 'durationMs', 'createdAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'trackKey', 'trackTitle', 'artistName',
+                         'albumName', 'trackUri', 'albumId', 'durationMs', 'createdAt'
+                       ]) &&
+                       isValidFavoriteTrack(incoming(), userId);
+
+      allow update: if false;
+
+      allow delete: if isOwner(userId) && isValidId(favId);
+    }
+
+    match /users/{userId}/fcmTokens/{tokenId} {
+      allow get: if isOwner(userId) && isValidId(tokenId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(tokenId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'token', 'notificationsEnabled', 'onlyActiveRegion',
+                         'regionId', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'token', 'notificationsEnabled', 'onlyActiveRegion',
+                         'regionId', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidFcmToken(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(tokenId) &&
+                       isValidFcmToken(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'token', 'notificationsEnabled', 'onlyActiveRegion',
+                         'regionId', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(tokenId);
+    }
+
+    match /regionalChats/{regionId}/messages/{messageId} {
+      allow get: if isSignedIn() && isValidRegionId(regionId) && isValidId(messageId);
+      allow list: if isSignedIn() && isValidRegionId(regionId);
+
+      allow create: if isSignedIn() &&
+                       isValidRegionId(regionId) &&
+                       isValidId(messageId) &&
+                       incoming().keys().hasAll([
+                         'senderId', 'senderName', 'senderAvatarBase64', 'regionId', 'messageText',
+                         'recommendedTrackTitle', 'recommendedArtist',
+                         'audioFileName', 'audioMimeType', 'audioClipBase64',
+                         'audioChunkCount', 'audioSizeBytes', 'expiresAt', 'createdAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'senderId', 'senderName', 'senderAvatarBase64', 'regionId', 'messageText',
+                         'recommendedTrackTitle', 'recommendedArtist',
+                         'audioFileName', 'audioMimeType', 'audioClipBase64',
+                         'audioChunkCount', 'audioSizeBytes', 'expiresAt', 'createdAt'
+                       ]) &&
+                       isValidChatMessage(incoming(), regionId);
+
+      allow update: if false;
+
+      allow delete: if isSignedIn() &&
+                       isValidRegionId(regionId) &&
+                       isValidId(messageId) &&
+                       (existing().senderId == request.auth.uid ||
+                        ('expiresAt' in existing() && existing().expiresAt is timestamp && existing().expiresAt <= request.time));
+
+      match /audioChunks/{chunkId} {
+        allow get: if isSignedIn() && isValidRegionId(regionId) && isValidId(messageId) && isValidId(chunkId);
+        allow list: if isSignedIn() && isValidRegionId(regionId) && isValidId(messageId);
+
+        allow create: if isSignedIn() &&
+                         isValidRegionId(regionId) &&
+                         isValidId(messageId) &&
+                         isValidId(chunkId) &&
+                         incoming().keys().hasAll([
+                           'senderId', 'regionId', 'messageId', 'chunkIndex',
+                           'dataBase64', 'expiresAt', 'createdAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'senderId', 'regionId', 'messageId', 'chunkIndex',
+                           'dataBase64', 'expiresAt', 'createdAt'
+                         ]) &&
+                         isValidAudioChunk(incoming(), regionId, messageId);
+
+        allow update: if false;
+
+        allow delete: if isSignedIn() &&
+                         isValidRegionId(regionId) &&
+                         isValidId(messageId) &&
+                         isValidId(chunkId) &&
+                         (existing().senderId == request.auth.uid ||
+                          ('expiresAt' in existing() && existing().expiresAt is timestamp && existing().expiresAt <= request.time));
+      }
+    }
+  }
+}

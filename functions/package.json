@@ -1,0 +1,12 @@
+{
+  "name": "ritmo-local-functions",
+  "description": "Secure backend proxy for Ritmo Local acoustic recognition",
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.1.1"
+  }
+}

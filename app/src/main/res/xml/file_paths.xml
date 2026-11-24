@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <cache-path name="shared_audio" path="shared_audio/" />
+    <cache-path name="shared_recap_cards" path="shared_recap_cards/" />
+    <files-path name="custom_covers" path="custom_covers/" />
+    <files-path name="cached_covers" path="cached_covers/" />
+    <external-files-path name="shared_downloads" path="Music/RitmoLocalShared/" />
+</paths>
